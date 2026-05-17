@@ -149,6 +149,7 @@ var frames=~fftsize, chain1,chain2,chain3,bins,env1,env2,env3,gate1,gate2,gate3;
 var dry1,dry2,dry3,chain11,chain22,chain33,sig11,sig22,sig33;
 var n=0,verb1,verb2,verb3,threshold,env;
 
+//env=EnvGen.ar(Env.perc(attack,decay,curve:curv),doneAction:2);
 env=EnvGen.ar(Env.sine(decay),doneAction:2);
 pan=2.pow(pan_mod.lag(0.001)/16256);
 ph = (2pi-(2pi/s));
@@ -614,29 +615,29 @@ bank.do{ ~dur3=~dur3++~dz.[n];n=n+1;};n=0;
 
 (
 		~pattern=Pdef(\1, Pbind(\instrument, \synth,
-			\dur,Pseq(~dur*3,inf),
-				\gain,Pbrown(0.5,1,exp(9.neg),inf),\drive,Pbrown((30).neg,(16256*3),exp(4).round(1).asInteger,inf),
-				\c,Pbrown(0,16256*~orange,exp(1).round(1).asInteger,inf),
-				\az,Pbrown(pi.neg,pi,7.5.degrad,inf),\el,Pbrown(0.5pi.neg,0.5pi,3.75.degrad,inf),
+			\dur,Pseq(~dur*1,inf),
+				\gain,Pbrown(0.4,0.6,exp(4.neg),inf),\drive,Pbrown((8128).neg,(16256*1),exp(4).round(1).asInteger,inf),
+				\c,Pbrown(16256,16256*~orange,exp(1).round(1).asInteger,inf),
+				\az,Pbrown(pi.neg,pi,14.degrad,inf),\el,Pbrown(0.5pi.neg,0.5pi,7.5.degrad,inf),
 				\scalee,2.rand,\harmonic,4.rand,\fl,7.5,
-				\bg1,Pbrown(0.0001,1,exp(1.neg),inf),\bg2,Pbrown(0.0001,1,exp(3.neg),inf),\bg3,Pbrown(0.0001,1,exp(9.neg),inf),
-				\bg4,Pbrown(0.0001,1,exp(6.neg),inf),\bg5,Pbrown(0.0001,1,exp(9.neg),inf),\bg6,Pbrown(0.0001,1,exp(3.neg),inf),
-				\bg7,Pbrown(0.0001,1,exp(3.neg),inf),\bg8,Pbrown(0.0001,1,exp(6.neg),inf),
-				\bg9,Pbrown(0.0001,1,exp(6.neg),inf),\bg9,Pbrown(0.0001,1,exp(9.neg),inf),
-				\lowend,64,\level,Pbrown(100,1000,exp(0.01),inf),\dyn,Pbrown(1,3,exp(4.neg),inf),
-				\comp,Pbrown(10.pow(0),10.pow(1),10.pow(0),inf),\buffer,Pbrown(50,200,exp(3),inf),
-				\tone_axis,1,
-				\ran,Pbrown(0,16256*~orange,exp(5).round(1).asInteger,inf),\rect_level,Pbrown(50,60,exp(2),inf),
-				\sphharm,Pbrown((16256*12).neg,(16256*4).neg,exp(3).round(1).asInteger,inf),
-				\speaker_size,Pbrown(0.1,0.3,exp(5.neg),inf),\room,Pbrown(0.6,1,exp(4.neg),inf),\mix,Pbrown(0.6,0.9,exp(4.neg),inf),
-				\pan_mod,Pbrown((16256*10).neg,(16256*5),exp(3).round(1).asInteger,inf),\spread,Pbrown(0.01,1,exp(3.neg),inf),
-				\limit,Pbrown(0.1,1,exp(4.neg),inf),
-				\fu,16,\band,Pbrown(0.000001,1,exp(8.neg),inf),\attack,Pbrown(1/64,4,1/64,inf),
-				\decay,Pbrown(4,16,0.1,inf),\curv,Pbrown(2.neg,8.neg,0.1,inf);
+				\bg1,Pbrown(0.0001,0.3,exp(1.neg),inf),\bg2,Pbrown(0.0001,0.3,exp(3.neg),inf),\bg3,Pbrown(0.0001,0.3,exp(4.neg),inf),
+				\bg4,Pbrown(0.0001,0.3,exp(3.neg),inf),\bg5,Pbrown(0.0001,0.3,exp(2.neg),inf),\bg6,Pbrown(0.0001,0.3,exp(3.neg),inf),
+				\bg7,Pbrown(0.0001,0.3,exp(1.neg),inf),\bg8,Pbrown(0.0001,0.3,exp(3.neg),inf),
+				\bg9,Pbrown(0.0001,0.3,exp(4.neg),inf),\bg9,Pbrown(0.0001,1,exp(4.neg),inf),
+				\lowend,32,\level,Pbrown(100,1000,exp(0.01),inf),\dyn,Pbrown(1,3,exp(4.neg),inf),
+				\comp,Pbrown(10.pow(10),10.pow(12),10.pow(2),inf),\buffer,Pbrown(0.1,1,exp(1),inf),
+				\tone_axis,0,
+				\ran,Pbrown(16256,16256*~orange,exp(4).round(1).asInteger,inf),\rect_level,Pbrown(30,50,exp(2),inf),
+				\sphharm,Pbrown((16256*12).neg,(16256*8).neg,exp(3).round(1).asInteger,inf),
+				\speaker_size,Pbrown(0.1,0.3,exp(5.neg),inf),\room,Pbrown(0.8,1,exp(4.neg),inf),\mix,Pbrown(0.5,0.7,exp(4.neg),inf),
+				\pan_mod,Pbrown((16256*10).neg,(16256*0),exp(3).round(1).asInteger,inf),\spread,Pbrown(0.05,1,exp(3.neg),inf),
+				\limit,Pbrown(0.5,1,exp(4.neg),inf),
+				\fu,32,\band,Pbrown(0.000001,1,exp(8.neg),inf),\attack,Pbrown(1/64,0.1,0.01,inf),
+				\decay,Pbrown(24,32,0.1,inf),\curv,Pbrown(2.neg,8.neg,0.1,inf);
 	)));
 		2.wait;
 		~pattern.play;
-			TempoClock.default.tempo_(1);
+			TempoClock.default.tempo_(1/4);
 
 	}); Tdef(\drone).play;
 })
