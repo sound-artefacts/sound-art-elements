@@ -296,9 +296,9 @@ sig1=HPF.ar(sig1,lowend);
 sig2=HPF.ar(sig2, lowend);
 sig3=HPF.ar(sig3, lowend);
 
-sig1=Compander.ar(sig1,control1,threshold1,1.2,1/3,0.03,0.15)+BrownNoise.ar(0.00001);
-sig2=Compander.ar(sig2,control2,threshold2,1.2,1/3,0.03,0.15)+BrownNoise.ar(0.00001);
-sig3=Compander.ar(sig3,control3,threshold3,1.2,1/3,0.03,0.15)+BrownNoise.ar(0.00001);
+sig1=Compander.ar(sig1*gain,control1,threshold1,1.2,1/3,0.03,0.15)+BrownNoise.ar(0.00001);
+sig2=Compander.ar(sig2*gain,control2,threshold2,1.2,1/3,0.03,0.15)+BrownNoise.ar(0.00001);
+sig3=Compander.ar(sig3*gain,control3,threshold3,1.2,1/3,0.03,0.15)+BrownNoise.ar(0.00001);
 
 /////xyz out
 Out.ar(4,sig1);
@@ -499,18 +499,19 @@ bank.do{ ~dur3=~dur3++~dz.[n];n=n+1;};n=0;
 ~s=(1+2.sqrt);
 ~seq= Pseq(~dur ,inf).asStream;
 ~val=1234;
-TempoClock.default.tempo_(4);
+TempoClock.default.tempo_(2);
 (
 ~sq= Routine({loop{
 //thisThread.randSeed = ~val;
-~incr=(~incr+(2pi-(2pi/~s))).wrap(pi,pi.neg);
+//~incr=(~incr+(2pi-(2pi/~s))).wrap(pi,pi.neg);
+~incr=(~incr+30).wrap(pi,pi.neg);
   ~seq.next.wait;
 }}));
 			(
 					~pattern = Pdef(\1,
     Pbind(
         \instrument, \synth,
-        \dur, Pseq(~dur, inf),
+        \dur, ~seq,
 
         \gain, Pfunc { ~gain },
         \drive, Pfunc { ~drive },
@@ -519,8 +520,8 @@ TempoClock.default.tempo_(4);
         \az, Pfunc { ~incr },
         \el, Pfunc { ~incr / 2 },
 
-        \attack, 0.01,
-        \dicay, 1,
+        \attack, 1,
+        \dicay, 7,
 
         \scalee, Pfunc { ~scalee },
         \harmonic, Pfunc { ~harmonic },
@@ -771,6 +772,80 @@ if(~synth.isPlaying,{~synth.set(\comp,b)});
 s.record(numChannels:4)
 
 
+////////further spatial arrays
+/*
+/tetrahedron
+(
+~azimuth=[45.degrad,135.neg.degrad,45.neg.degrad,135.degrad];
+~elevation=[35.264390.neg.degrad,35.264390.neg.degrad,35.264390.degrad,35.264390.degrad];
+);
+//////cube
+(
+~azimuth=[45.degrad,135.degrad,45.neg.degrad,135.neg.degrad,45.degrad,135.degrad,45.neg.degrad,135.neg.degrad];
+~elevation=[35.264390.neg.degrad,35.264390.neg.degrad,35.264390.neg.degrad,35.264390.neg.degrad,35.264390.degrad,35.264390.degrad,35.264390.degrad,35.264390.degrad];
+)
 
+/////octahedron
+
+(
+~azimuth=[0.degrad,0.degrad,90.degrad,180.degrad,90.neg.degrad,0.degrad];
+~elevation=[90.neg.degrad,0.degrad,0.degrad,0.degrad,0.degrad,90.degrad];
+)
+
+//////icosahedron
+(
+~azimuth=[90.degrad,90.neg.degrad,0.degrad,180.degrad,58.28.degrad,121.72.degrad,121.72.neg.degrad,58.neg.degrad,90.degrad,90.neg.degrad,0.degrad,180.degrad];
+~elevation=[58.28.neg.degrad,58.28.neg.degrad,31.72.neg.degrad,31.72.neg.degrad,0.degrad,0.degrad,0.degrad,0.degrad,58.28.degrad,58.28.degrad,31.72.degrad,31.72.degrad];
+)
+
+/////dodecahedron
+
+(
+~azimuth=[45.degrad,135.neg.degrad,135.degrad,45.neg.degrad,90.degrad,90.neg.degrad,0.degrad,180.degrad,45.degrad,135.neg.degrad,135.degrad,45.neg.degrad,90.degrad,
+	90.neg.degrad,69.09.degrad,110.91.degrad,110.91.neg.degrad,69.09.neg.degrad,0.degrad,180.degrad];
+
+~elevation=[35.26.neg.degrad,35.26.neg.degrad,35.26.neg.degrad,35.26.neg.degrad,69.09.neg.degrad,69.09.neg.degrad,20.91.neg.degrad,20.91.neg.degrad,
+	35.26.degrad,35.26.degrad,35.26.degrad,35.26.degrad,69.09.degrad,69.09.degrad,0.degrad,0.degrad,0.degrad,0.degrad,20.91.degrad,20.91.degrad]
+)
+
+/////Rhombic dodecahedron//// hull
+
+(
+~azimuth=[0.degrad,45.degrad,135.neg.degrad,135.degrad,45.neg.degrad,0.degrad,180.degrad,90.degrad,90.neg.degrad,0.degrad,
+	45.degrad,135.neg.degrad,135.degrad,45.neg.degrad];
+~elevation=[90.neg.degrad,35.264390.neg.degrad,35.264390.neg.degrad,35.264390.neg.degrad,35.264390.neg.degrad,0.degrad
+	,0.degrad,0.degrad,0.degrad,90.degrad,35.264390.degrad,35.264390.degrad,35.264390.degrad,35.264390.degrad];
+)
+
+/////cuboctahedron//// core
+
+(
+~azimuth=[0.degrad,90.degrad,180.degrad,90.neg.degrad,45.degrad,135.degrad,45.neg.degrad,135.neg.degrad,
+	0.degrad,90.degrad,180.degrad,90.neg.degrad];
+~elevation=[45.neg.degrad,45.neg.degrad,45.neg.degrad,45.neg.degrad,0.degrad,0.degrad,0.degrad,0.degrad,
+	45.degrad,45.degrad,45.degrad,45.degrad];
+)
+
+
+///////////////Rhombic Triacontahedron//// hull
+(
+~azimuth=[0.degrad,0.degrad,72.degrad,144.degrad,144.neg.degrad,72.neg.degrad,36.degrad,108.degrad,180.degrad,108.neg.degrad,36.neg.degrad,
+	0.degrad,72.degrad,144.degrad,144.neg.degrad,72.neg.degrad,36.degrad,108.degrad,180.degrad,108.neg.degrad,36.neg.degrad,
+	0.degrad,72.degrad,144.degrad,144.neg.degrad,72.neg.degrad,36.degrad,108.degrad,180.degrad,108.neg.degrad,36.neg.degrad,0.degrad];
+
+~elevation=[90.neg.degrad,52.6.neg.degrad,52.6.neg.degrad,52.6.neg.degrad,52.6.neg.degrad,52.6.neg.degrad,26.6.neg.degrad,26.6.neg.degrad,26.6.neg.degrad,26.6.neg.degrad,26.6.neg.degrad,10.8.neg.degrad,10.8.neg.degrad,10.8.neg.degrad,10.8.neg.degrad,10.8.neg.degrad,52.6.degrad,52.6.degrad,52.6.degrad,52.6.degrad,52.6.degrad,26.6.degrad,26.6.degrad,26.6.degrad,26.6.degrad,26.6.degrad,10.8.degrad,10.8.degrad,10.8.degrad,10.8.degrad,10.8.degrad,90.degrad];
+
+)
+
+///////icosidodecahedron//// core
+(
+~azimuth=[18.degrad,90.degrad,162.degrad,126.neg.degrad,54.neg.degrad,54.degrad,126.degrad,162.neg.degrad,90.neg.degrad,18.neg.degrad,
+	0.degrad,36.degrad,72.degrad,108.degrad,144.degrad,180.degrad,144.neg.degrad,108.neg.degrad,72.neg.degrad,36.neg.degrad,
+	54.degrad,126.degrad,162.neg.degrad,90.neg.degrad,18.neg.degrad,18.degrad,90.degrad,162.degrad,126.neg.degrad,54.neg.degrad];
+
+~elevation=[58.283.degrad,58.283.degrad,58.283.degrad,58.283.degrad,58.283.degrad,58.283.neg.degrad,58.283.neg.degrad,58.283.neg.degrad,58.283.neg.degrad,58.283.neg.degrad,0.degrad,0.degrad,0.degrad,0.degrad,0.degrad,0.degrad,0.degrad,0.degrad,0.degrad,0.degrad,
+37.717.degrad,37.717.degrad,37.717.degrad,37.717.degrad,37.717.degrad,37.717.neg.degrad,37.717.neg.degrad,37.717.neg.degrad,37.717.neg.degrad,37.717.neg.degrad];
+
+)*/
 
 
