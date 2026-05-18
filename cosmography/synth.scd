@@ -97,7 +97,7 @@ var nn=1.neg;
 SynthDef.new(\synth,{
 
 arg gain=1,drive=0,c=0,az=0,el=0,scalee=0,lowend=64,level=100,speaker_size=0.15,tone_axis=0,ran=0,rect_level=1,harmonic=1,
-				fl=40,room=0.5,mix=0.5,pan_mod=0.01,spread=1,limit=0.8,fu=32,dyn=1,comp=1,sphharm=1,gate=1;
+			dicay=4,fl=40,room=0.5,mix=0.5,pan_mod=0.01,spread=1,limit=0.8,fu=32,dyn=1,comp=1,sphharm=1,attack=0.01;
 
 var expansion,heavy,fundamental,sph_mod,polytope,bessel_ripple,magx,magy,magz,sph,mod_timbre,mass=~mass;
 var ton1,ton2,ton3,tonal_x,tonal_y,tonal_z,mod_x,mod_y,mod_z,phase_mod_x,phase_mod_y,phase_mod_z;
@@ -114,7 +114,7 @@ var dry1,dry2,dry3,chain11,chain22,chain33,sig111,sig222,sig333;
 var n=0,verb1,verb2,verb3,threshold,env,decay;
 var sig11,sig12,sig13,sig14,sig21,sig22,sig23,sig24,sig31,sig32,sig33,sig34;
 
-env=EnvGen.ar(Env.perc(0.01,8),gate:gate,doneAction:0);
+env=EnvGen.ar(Env.perc(attack,dicay),doneAction:2);
 //env=EnvGen.ar(Env.sine(decay),doneAction:2);
 pan=2.pow(pan_mod.lag(0.001)/16256);
 ph = (2pi-(2pi/s));
@@ -285,9 +285,9 @@ sig1=(sig1*heavy).softclip;
 sig2=(sig2*heavy).softclip;
 sig3=(sig3*heavy).softclip;
 
-control1=SinOsc.ar(freq1,phasex,amp1*gain*env);
-control2=SinOsc.ar(freq2,phasey,amp2*gain*env);
-control3=SinOsc.ar(freq3,phasez,amp3*gain*env);
+control1=SinOsc.ar(freq1,phasex,amp1*gain);
+control2=SinOsc.ar(freq2,phasey,amp2*gain);
+control3=SinOsc.ar(freq3,phasez,amp3*gain);
 threshold1=(((343/speaker_size)/fundamental).reciprocal.ampdb/2.sqrt).dbamp;
 threshold2=(((343/speaker_size)/fundamental).reciprocal.ampdb/2.sqrt).dbamp;
 threshold3=(((343/speaker_size)/fundamental).reciprocal.ampdb/2.sqrt).dbamp;
@@ -490,29 +490,71 @@ bank.do{ ~dur3=~dur3++~dz.[n];n=n+1;};n=0;
 )}.value);
 );
 
-~seq= Pseq(~dur ,inf).asStream;
-~val=1234;
-~tempo=1;
-TempoClock.default.tempo_(~tempo);
-~gain=1;~drive=0;~c=0;~az=0;~el=0;~scale=0;~harmonic=1;~fl=7.5;~gate=0;
+~gain=1;~drive=0;~c=0;~az=0;~el=0;~scalee=0;~harmonic=1;~fl=7.5;~gate=0;
 ~lowend=64;~level=600;~dyn=1;~comp=1;~tone_axis=1;~ran=16256;~rect_level=2;
 ~sphharm=0;~speaker_size=0.15;~room=0.5;~mix=0.4;~pan_mod=16*16256.neg;~spread=1;~limit=1;~fu=64;
-(~synth=Synth.new(\synth,[\gain,~gain,\drive,~drive,\c,~c,\az,~az,\el,~el,\scale,~scale,
-\harmonic,~harmonic,\fl,~fl,\gate,~gate,\lowend,~lowend,\level,~level,\dyn,~dyn,\comp,~comp,
-\tone_axis,~tone_axis,\ran,~ran,\rect_level,~rect_level,\sphharm,~sphharm,\speaker_size,~speaker_size,
-\room,~room,\mix,~mix,\pan_mod,~pan_mod,\spread,~spread,\limit,~limit,\fu,~fu]).register);
+
+~incr=0;
+~g=((1+5.sqrt)/2);
+~s=(1+2.sqrt);
+~seq= Pseq(~dur ,inf).asStream;
+~val=1234;
+TempoClock.default.tempo_(1);
 (
 ~sq= Routine({loop{
 //thisThread.randSeed = ~val;
+~incr=(~incr+(2pi-(2pi/~s))).wrap(pi,pi.neg);
+		~pattern = Pdef(\1,
+    Pbind(
+        \instrument, \synth,
+        \dur, Pseq(~dur, inf),
+
+        \gain, Pfunc { ~gain },
+        \drive, Pfunc { ~drive },
+        \c, Pfunc { ~c },
+
+        \az, Pfunc { ~incr },
+        \el, Pfunc { ~incr / 2 },
+
+        \attack, 0.01,
+        \dicay, 8,
+
+        \scalee, Pfunc { ~scalee },
+        \harmonic, Pfunc { ~harmonic },
+        \fl, Pfunc { ~fl },
+
+        \gate, Pfunc { ~gate },
+
+        \lowend, Pfunc { ~lowend },
+        \level, Pfunc { ~level },
+        \dyn, Pfunc { ~dyn },
+        \comp, Pfunc { ~comp },
+
+        \tone_axis, Pfunc { ~tone_axis },
+        \ran, Pfunc { ~ran },
+        \rect_level, Pfunc { ~rect_level },
+
+        \sphharm, Pfunc { ~sphharm },
+        \speaker_size, Pfunc { ~speaker_size },
+
+        \room, Pfunc { ~room },
+        \mix, Pfunc { ~mix },
+
+        \pan_mod, Pfunc { ~pan_mod },
+        \spread, Pfunc { ~spread },
+        \limit, Pfunc { ~limit },
+
+        \fu, Pfunc { ~fu }
+    )
+);
   ~seq.next.wait;
-~synth.set(\az,pi.rand2,\el,0.5pi.rand2,\gate,1);
-//~synth.set(\el, 0.5.rand2);
-0.1.wait;
-	~synth.set(\gate,0);
 }}));
+			(
 					~sq.play;
+					~pattern.play;
+			)
 		);
-(
+		(
 			MIDIClient.init;
 			MIDIIn.connectAll;
 			(
@@ -558,7 +600,7 @@ TempoClock.default.tempo_(~tempo);
 						a=val.linlin(0,127,0,1).round(1).asInteger;
 						a.postln;
 						~scale=a;
-						if(~synth.isPlaying,{~synth.set(\scale,a)});
+						if(~synth.isPlaying,{~synth.set(\scalee,a)});
 					},6);
 				);
 				(
@@ -712,14 +754,11 @@ if(~synth.isPlaying,{~synth.set(\comp,b)});
 						var a;
 						a=val.linlin(0,127,1,10).round(1).asInteger;
 						a.postln;
-						~hamonic=a;
+						~harmonic=a;
 						if(~synth.isPlaying,{~synth.set(\harmonic,a)});
 					},24);
 				);
-				);
-
-		);
-//~sq.play;
+				))
 
 			TempoClock.default.tempo_(1/4);
 
