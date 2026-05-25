@@ -1,4 +1,4 @@
-# an-instrumentally-generative-spatial-sound-cosmography, or a heavy metal fx and digital synth/ aka godjilla
+# instrumentally generative heavy metal fx and digital synthesis
  SuperCollider
  //for standalone put init file content in SC startup file,
   install Mathilib quark, optionally SC plugins
